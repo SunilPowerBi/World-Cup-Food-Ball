@@ -1,0 +1,25 @@
+let
+    Source = Excel.Workbook(File.Contents("C:\Users\Admin\Downloads\WorldCupMatches.xlsx"), null, true),
+    WorldCupMatches_Sheet = Source{[Item="WorldCupMatches",Kind="Sheet"]}[Data],
+    #"Promoted Headers" = Table.PromoteHeaders(WorldCupMatches_Sheet, [PromoteAllScalars=true]),
+    #"Change Country name to Short Form" = Table.AddColumn(#"Promoted Headers", "First Characters", each Text.Start([Home Team Name], 3), type text),
+    #"Changed Type" = Table.TransformColumnTypes(#"Change Country name to Short Form",{{"Attendance", Int64.Type}}),
+    #"Inserted  Column Year" = Table.AddColumn(#"Changed Type", "Year.1", each Date.Year([Datetime]), Int64.Type),
+    #"Rename Date Time To Conducting Year" = Table.RenameColumns(#"Inserted  Column Year",{{"Year.1", "Conducting Year"}}),
+    #"Inserted First Character Country" = Table.AddColumn(#"Rename Date Time To Conducting Year", "First Characters.1", each Text.Start([Away Team Name], 3), type text),
+    #"Renamed First Character Country To Eliminated Team" = Table.RenameColumns(#"Inserted First Character Country",{{"First Characters.1", "Eliminated Team"}}),
+    #"Inserted New Column Stadium 1" = Table.AddColumn(#"Renamed First Character Country To Eliminated Team", "Text Before Delimiter", each Text.BeforeDelimiter([Stadium], " "), type text),
+    #"Renamed  Stadium 1 to Std_start Name" = Table.RenameColumns(#"Inserted New Column Stadium 1",{{"Text Before Delimiter", "Std_start Name"}}),
+    #"Changed Type Whole Number To Decimal" = Table.TransformColumnTypes(#"Renamed  Stadium 1 to Std_start Name",{{"Home Team Goals", type number}}),
+    #"Inserted  Column First Characters 1" = Table.AddColumn(#"Changed Type Whole Number To Decimal", "First Characters.1", each Text.Start([City], 5), type text),
+    #"Renamed First Character to City_start" = Table.RenameColumns(#"Inserted  Column First Characters 1",{{"First Characters.1", "City_start"}})
+in
+    #"Renamed First Character to City_start"
+
+#"Changed Type" = Table.TransformColumnTypes(#"Promoted Headers",{{"Year", Int64.Type}, {"Country", type text}, {"Winner", type text}, {"Runners-Up", type text}, {"Third", type text}, {"Fourth", type text}, {"GoalsScored", Int64.Type}, {"QualifiedTeams", Int64.Type}, {"MatchesPlayed", Int64.Type}, {"Attendance", type any}}),
+    #"Inserted Column  Country toFirst Characters" = Table.AddColumn(#"Changed Type", "First Characters", each Text.Start([Winner], 3), type text),
+    #"Rename First character to Winning Country" = Table.RenameColumns(#"Inserted Column  Country toFirst Characters",{{"First Characters", "Winning country"}}),
+    #"Inserted  Column Runnerup toFirst Characters" = Table.AddColumn(#"Rename First character to Winning Country", "First Characters", each Text.Start([#"Runners-Up"], 3), type text),
+    #"Rename Column Firstcharacter to Runner up Country" = Table.RenameColumns(#"Inserted  Column Runnerup toFirst Characters",{{"First Characters", "RunnerUp Country"}})
+in
+    #"Rename Column Firstcharacter to Ruanner up Country"
