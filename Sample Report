@@ -1,0 +1,15 @@
+let
+    Source = Excel.Workbook(File.Contents("C:\Users\Admin\Downloads\Cleanless Data.xlsx"), null, true),
+    Sheet1_Sheet = Source{[Item="Sheet1",Kind="Sheet"]}[Data],
+    #"Promoted Headers" = Table.PromoteHeaders(Sheet1_Sheet, [PromoteAllScalars=true]),
+    #"Changed Type" = Table.TransformColumnTypes(#"Promoted Headers",{{"Annual Sales Report", type text}, {"Column2", type text}, {"Column3", type text}, {"Column4", type number}, {"Column5", type number}, {"Column6", type number}, {"Column7", type number}, {"Column8", type any}}),
+    #"Removed upc column" = Table.RemoveColumns(#"Changed Type",{"Column3"}),
+    #"Removed Top  2 Rows" = Table.Skip(#"Removed upc column",2),
+    #"Promoted Headers1" = Table.PromoteHeaders(#"Removed Top  2 Rows", [PromoteAllScalars=true]),
+    #"Set 1 st Row AS A Column Header" = Table.TransformColumnTypes(#"Promoted Headers1",{{"Product Category", type text}, {"Product Sub Category", type text}, {"2011", type number}, {"2012", type number}, {"2013", type number}, {"2014", type number}, {"Grand Total", type number}}),
+    #"Filled Down Values With Respect to Column Values" = Table.FillDown(#"Set 1 st Row AS A Column Header",{"Product Category"}),
+    #"Remove Null Values In Each Column" = Table.SelectRows(#"Filled Down Values With Respect to Column Values", each ([Product Sub Category] <> null)),
+    #"Unpivoting The Years Columns" = Table.UnpivotOtherColumns(#"Remove Null Values In Each Column", {"Product Category", "Product Sub Category", "Grand Total"}, "Attribute", "Value"),
+    #"Removed  Grand Total Column" = Table.RemoveColumns(#"Unpivoting The Years Columns",{"Grand Total"})
+in
+    #"Removed  Grand Total Column"
