@@ -1,0 +1,14 @@
+let
+    Source = Excel.Workbook(File.Contents("C:\Users\Admin\Downloads\Loan Details With nags.xlsx"), null, true),
+    Sheet1_Sheet = Source{[Item="Sheet1",Kind="Sheet"]}[Data],
+    #"Promoted Headers" = Table.PromoteHeaders(Sheet1_Sheet, [PromoteAllScalars=true]),
+    #"Changed Type" = Table.TransformColumnTypes(#"Promoted Headers",{{"loan_key", Int64.Type}, {"is_current", type logical}, {"start_date", type datetime}, {"end_date", type any}, {"entity_code", type text}, {"branch_key", Int64.Type}, {"currency_code", type text}, {"refinanced", type logical}, {"rebuild_no", Int64.Type}, {"previous_contract_number", type any}, {"product_key", type text}, {"interest_rate", Int64.Type}, {"grace_period", Int64.Type}, {"disbursment_dateid", Int64.Type}, {"principal_amount", Int64.Type}, {"interest_planned_amount", type number}, {"principal_amount_lccy", Int64.Type}, {"interest_planned_amount_lccy", type number}, {"principal_amount_eur", type number}, {"interest_planned_amount_eur", type number}, {"maturity_dateid", Int64.Type}, {"loan_term", Int64.Type}, {"modification_dateid", Int64.Type}, {"modification_timestamp", type datetime}, {"loan_officer_user_code", type text}}),
+    #"Removed Previous_Contact Column" = Table.RemoveColumns(#"Changed Type",{"end_date", "previous_contract_number"}),
+    #"Filtered Rows" = Table.SelectRows(#"Removed Previous_Contact Column", each true),
+    #"Removed Distributed Columns1" = Table.RemoveColumns(#"Filtered Rows",{"disbursment_dateid"}),
+    #"Filtered Rows1" = Table.SelectRows(#"Removed Distributed Columns1", each true),
+    #"Removed  Maturity_dateidColumns2" = Table.RemoveColumns(#"Filtered Rows1",{"modification_dateid", "maturity_dateid"}),
+    #"Changed data time Type to date Type" = Table.TransformColumnTypes(#"Removed  Maturity_dateidColumns2",{{"modification_timestamp", type date}, {"start_date", type date}}),
+    #"Renamed  Entity_Code Column To Bank_code" = Table.RenameColumns(#"Changed data time Type to date Type",{{"entity_code", "Bank_code"}, {"branch_key", "Branch_ID"}})
+in
+    #"Renamed  Entity_Code Column To Bank_code"
